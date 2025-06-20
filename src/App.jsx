@@ -1,10 +1,53 @@
-import { useState } from 'react'
+import { useState, useEffect, use } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+import { io } from 'socket.io-client';
+
 function App() {
   const [count, setCount] = useState(0)
+  const [isConnected, setIsConnected] = useState(false)
+  const [username, setUsername] = useState('')
+  const [socket, setSocket] = useState(null)
+
+  function connectToChatServer() {
+    console.log(connectToChatServer);
+    const _socket = io('http://localhost:3000', {
+      autoConnect: false,
+      query: {
+        username: username,
+      }
+    });
+    _socket.connect();
+    setSocket(_socket);
+  }
+
+  function disconnectToChatServer() {
+    console.log(disconnectToChatServer);
+    socket?.disconnect();
+  }
+
+  function onCon() {
+    console.log('onCon Log');
+    setIsConnected(true);
+  }
+  function onDiscon() {
+    console.log('onDiscon Log');
+    setIsConnected(false);
+  }
+
+  useEffect( () => {
+    console.log('useEffect call');
+    socket?.on('connect', onCon);
+    socket?.on('disconnect', onDiscon);
+
+    return () => {
+      //console.log('useEffect Clean up');
+      socket?.off('connect', onCon);
+      socket?.off('disconnect', onDiscon);
+    };
+  }, [socket]);
 
   return (
     <>
@@ -24,6 +67,17 @@ function App() {
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
+      </div>
+      <h2>사용자: {username}</h2>
+      <h3>현재 접속상태: {isConnected ? '접속중' : '미접속'}</h3>
+      <div className='card'>
+        <input value={username} onChange={e => setUsername(e.target.value)} />
+        <button onClick={() => connectToChatServer()}>
+          접속
+        </button>
+        <button onClick={() => disconnectToChatServer()}>
+          접속종료
+        </button>
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
