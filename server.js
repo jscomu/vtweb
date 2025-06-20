@@ -18,8 +18,15 @@ io.on('connection', (client) => {
     console.log(`사용자 접속했습니다. ${connectedUsername}`);
     //console.log(client.handshake.query.username);
 
+    client.broadcast.emit('new message', {username: '관리자', message: `[${connectedUsername}]님 입장!`});
+
+    client.on('new message', (msg) => {
+        console.log(`new msg : ${msg}`);
+    });
+
     client.on('disconnect', () => {
         console.log(`사용자 접속 종료...${connectedUsername}`);
+        io.emit('new message', {username: '관리자', message: `[${connectedUsername}]님 퇴장!`});
     });
 });
 server.listen(3000, () => {

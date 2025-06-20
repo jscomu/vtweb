@@ -8,8 +8,9 @@ import { io } from 'socket.io-client';
 function App() {
   const [count, setCount] = useState(0)
   const [isConnected, setIsConnected] = useState(false)
-  const [username, setUsername] = useState('')
   const [socket, setSocket] = useState(null)
+  const [username, setUsername] = useState('')
+  const [userinput, setUserinput] = useState('')
 
   function connectToChatServer() {
     console.log(connectToChatServer);
@@ -36,18 +37,30 @@ function App() {
     console.log('onDiscon Log');
     setIsConnected(false);
   }
+  function onMsgReceived(msg) {
+    console.log(`onMsg : ${msg}`);
+  }
 
   useEffect( () => {
     console.log('useEffect call');
     socket?.on('connect', onCon);
     socket?.on('disconnect', onDiscon);
+    socket?.on('new message', onMsgReceived);
 
     return () => {
       //console.log('useEffect Clean up');
       socket?.off('connect', onCon);
       socket?.off('disconnect', onDiscon);
+      socket?.off('new message', onMsgReceived);
     };
   }, [socket]);
+
+  function sendMessage() {
+    console.log(`sendMessage ${userinput}`);
+    socket?.emit('new message', userinput, (response) => {
+      console.log(response);
+    });
+  }
 
   return (
     <>
@@ -70,6 +83,7 @@ function App() {
       </div>
       <h2>사용자: {username}</h2>
       <h3>현재 접속상태: {isConnected ? '접속중' : '미접속'}</h3>
+
       <div className='card'>
         <input value={username} onChange={e => setUsername(e.target.value)} />
         <button onClick={() => connectToChatServer()}>
@@ -79,6 +93,14 @@ function App() {
           접속종료
         </button>
       </div>
+
+      <div className='card'>
+        <input value={userinput} onChange={e => setUserinput(e.target.value)} />
+        <button onClick={() => sendMessage()}>
+          보내기
+        </button>
+      </div>
+
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
