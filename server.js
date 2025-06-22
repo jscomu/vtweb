@@ -21,7 +21,9 @@ io.on('connection', (client) => {
     client.broadcast.emit('new message', {username: '관리자', message: `[${connectedUsername}]님 입장!`});
 
     client.on('new message', (msg) => {
-        console.log(`new msg : ${msg}`);
+        //console.log(`new msg : ${msg}`);
+        console.log(msg);
+        io.emit('new message', {username: msg.username, message: msg.message});
     });
 
     client.on('disconnect', () => {

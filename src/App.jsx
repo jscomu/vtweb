@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 import { io } from 'socket.io-client';
+//import { perEnvironmentPlugin } from 'vite';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -11,6 +12,7 @@ function App() {
   const [socket, setSocket] = useState(null)
   const [username, setUsername] = useState('')
   const [userinput, setUserinput] = useState('')
+  const [messages, setMessages] = useState([])  //채팅메시지 배열
 
   function connectToChatServer() {
     console.log(connectToChatServer);
@@ -38,8 +40,18 @@ function App() {
     setIsConnected(false);
   }
   function onMsgReceived(msg) {
-    console.log(`onMsg : ${msg}`);
+    console.log(msg);
+    setMessages(previous => [...previous, msg]); // ... 기존 배열에 새로운 배열을 추가하는 경우
   }
+
+  useEffect(() => {
+    console.log('useEffect Scroll');
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      left: 0,
+      behavior: "smooth"
+    })
+  }, [messages]); //messages 배열이 변경되면 실행한다.
 
   useEffect( () => {
     console.log('useEffect call');
@@ -56,11 +68,18 @@ function App() {
   }, [socket]);
 
   function sendMessage() {
+    //console.log(`sendMessage ${userinput}`);
     console.log(`sendMessage ${userinput}`);
-    socket?.emit('new message', userinput, (response) => {
+    socket?.emit('new message', { username: username, message: userinput }, (response) => {
       console.log(response);
     });
   }
+
+  const messageList = messages.map((aMsg, index) =>
+    <li key = {index}>
+      {aMsg.username} :{aMsg.message}
+    </li>
+  );
 
   return (
     <>
@@ -101,9 +120,9 @@ function App() {
         </button>
       </div>
 
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <ul>
+        {messageList}
+      </ul>
     </>
   )
 }
